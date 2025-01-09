@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐕 Walk ALL the Puppies! 🐕</title>
+</head>
+<body>
+    <h1>🐕 Walk ALL the Puppies! 🐕</h1>
+    <p id="stepsValue"></p>
+    <p>Total to date: <span id="totalSteps">0</span></p>
+    <p id="milestoneMessage" style="color: #2ecc71; font-weight: bold;"></p>
+    <p id="nextTarget" style="color: #3498db;"></p>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Get the 'steps' parameter
+        const steps = urlParams.get('steps');
+        
+        // Display the value
+        const stepsElement = document.getElementById('stepsValue');
+        if (steps) {
+            stepsElement.textContent = steps;
+        } else {
+            stepsElement.textContent = 'No steps parameter found in URL';
+        }
+
+        // Cookie functions
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+            document.cookie = name + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for(let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length);
+            }
+            return null;
+        }
+
+        function checkMilestones(totalSteps) {
+            const milestones = [
+                { threshold: 10000, message: "🎉 AMAZING! You've reached 10,000 steps! The puppies are so proud of you! 🐕🐕🐕" },
+                { threshold: 5000, message: "🌟 Fantastic! 5,000 steps reached! The puppies are getting so fit! 🐕🐕" },
+                { threshold: 2500, message: "⭐ Great job! You've hit 2,500 steps! The puppies are loving it! 🐕" },
+                { threshold: 1000, message: "🎈 Congratulations on your first 1,000 steps! The puppies are wagging their tails! 🐾" }
+            ];
+
+            let nextTarget = null;
+            let achievedMessage = null;
+
+            // Find the highest achieved milestone and next target
+            for (const milestone of milestones) {
+                if (totalSteps >= milestone.threshold) {
+                    achievedMessage = milestone.message;
+                    break;
+                }
+                nextTarget = milestone;
+            }
+
+            // Update milestone message display
+            const milestoneElement = document.getElementById('milestoneMessage');
+            if (achievedMessage) {
+                milestoneElement.textContent = achievedMessage;
+            } else {
+                milestoneElement.textContent = '';
+            }
+
+            // Update next target display
+            const nextTargetElement = document.getElementById('nextTarget');
+            if (nextTarget) {
+                const stepsToGo = nextTarget.threshold - totalSteps;
+                nextTargetElement.textContent = `${stepsToGo} steps to go until your next milestone (${nextTarget.threshold} steps)! Keep those puppies walking! 🐾`;
+            } else if (totalSteps >= 10000) {
+                nextTargetElement.textContent = "You've reached all milestones! The puppies are super fit now! Keep walking! 🐕🚶‍♀️";
+            }
+        }
+
+        function saveSteps() {
+            if (!steps) return; // Don't save if no steps parameter
+            
+            const currentTotal = getCookie('totalSteps');
+            const newSteps = parseInt(steps);
+            
+            if (currentTotal) {
+                const newTotal = parseInt(currentTotal) + newSteps;
+                setCookie('totalSteps', newTotal, 30);
+                document.getElementById('totalSteps').textContent = newTotal;
+                checkMilestones(newTotal);
+            } else {
+                setCookie('totalSteps', newSteps, 30);
+                document.getElementById('totalSteps').textContent = newSteps;
+                checkMilestones(newSteps);
+            }
+        }
+
+        function resetSteps() {
+            setCookie('totalSteps', 0, 30);
+            document.getElementById('totalSteps').textContent = '0';
+            document.getElementById('milestoneMessage').textContent = '';
+            document.getElementById('nextTarget').textContent = '1000 steps to go until your next milestone (1000 steps)! Keep those puppies walking! 🐾';
+        }
+
+        // Display total steps from cookie on page load
+        window.onload = function() {
+            const totalSteps = getCookie('totalSteps') || '0';
+            document.getElementById('totalSteps').textContent = totalSteps;
+            checkMilestones(parseInt(totalSteps));
+        }
+    </script>
+
+    <button onclick="saveSteps()">Save/Add Steps</button>
+    <button onclick="resetSteps()">Reset Steps</button>
+    <br><br>
+    <a href="shortcuts://run-shortcut?name=Add%20Steps%20to%20Walker%20App">🚶‍♀️Import steps from Apple health shortcuts 🚶‍♀️</a>
+    <hr/>
+    <a href="Add_Steps_To_Walker_App.shortcut">👩‍💻 Don't have the shortcut - click here to download and install it 👩‍💻</a>
+</body>
+</html> 
